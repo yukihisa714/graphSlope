@@ -22,35 +22,60 @@ can.addEventListener("mousemove", e => {
 });
 
 const coefficient = [1, 3, 1, 0];
-let TMPcoefficient = coefficient.slice();
-const equation = (arr, x) => {
+/**
+ * 係数とxから実数解を求める
+ * @param {Array} coe 
+ * @param {Number} x 
+ * @returns 実数解
+ */
+const equation = (coe, x) => {
     let result = 0;
-    for (let i = 0; i < arr.length; i++) {
-        result += arr[i] * (x ** (arr.length - 1 - i));
+    let member = 1;
+    // for (let i = 0; i < coe.length; i++) {
+    //     result += coe[i] * (x ** (coe.length - 1 - i));
+    // }
+    for (let i = coe.length - 1; i >= 0; i--) {
+        result += coe[i] * member;
+        member *= x;
     }
     return result;
 };
 
-const differential = (arr) => {
+/**
+ * 与えられた関数を微分する
+ * @param {Array} coe 係数
+ * @returns {Array} 引数より要素が一つ少ない
+ */
+const differential = (coe) => {
     const result = [];
-    for (let i = 0; i < arr.length - 1; i++) {
-        result[i] = arr[i] * (arr.length - 1 - i);
+    for (let i = 0; i < coe.length - 1; i++) {
+        result[i] = coe[i] * (coe.length - 1 - i);
     }
     return result;
 };
 
+/**
+ * 直線を引く関数
+ * @param {Number} x1 
+ * @param {Number} y1 
+ * @param {Number} x2 
+ * @param {Number} y2 
+ * @param {String} c color
+ * @param {Number} w lineWidth
+ */
 const drawLine = (x1, y1, x2, y2, c, w) => {
+    ctx.strokeStyle = c;
+    ctx.lineWidth = w;
     ctx.beginPath();
     ctx.lineTo(x1, y1);
     ctx.lineTo(x2, y2);
-    ctx.strokeStyle = c;
-    ctx.lineWidth = w;
     ctx.stroke();
 };
 
 let points = [];
 
 const makeGraphPoints = (arr) => {
+    // const st = Date.now();
     points = [];
     for (let x = -CAN_W / 2; x < CAN_W / 2; x++) {
         const p1x = x * SPP;
@@ -59,6 +84,7 @@ const makeGraphPoints = (arr) => {
         const p2y = p1y / SPP + CAN_H / 2;
         points.push({ x: p2x, y: p2y });
     }
+    // console.log(Date.now() - st);
 };
 
 const drawGraph = () => {
@@ -91,17 +117,17 @@ const drawLattice = () => {
 
 const cfs = document.getElementById("coefficients");
 const makeRanges = () => {
-    for (let i = coefficient.length - 1; i >= 0; i--) {
-        const child = document.createElement("input");
-        child.type = "range";
-        child.id = `cfs${i}`;
-        child.classList.add("range");
-        child.list = "markers"
-        child.value = coefficient[i];
-        child.min = -10;
-        child.max = 10;
-        child.step = 0.2;
-        cfs.prepend(child);
+    for (let i = 0; i < coefficient.length; i++) {
+        const range = document.createElement("input");
+        range.type = "range";
+        range.id = `cfs${i}`;
+        range.classList.add("range");
+        range.setAttribute("list", `markers`);
+        range.value = coefficient[i];
+        range.min = -10;
+        range.max = 10;
+        range.step = 0.2;
+        cfs.appendChild(range);
     }
 }
 makeRanges();
@@ -117,9 +143,7 @@ const mainLoop = () => {
     ctx.clearRect(0, 0, CAN_W, CAN_H);
     importCfs();
     drawLattice();
-    if (coefficient !== TMPcoefficient) {
-        makeGraphPoints(coefficient);
-    }
+    makeGraphPoints(coefficient);
     drawGraph();
     const slope = equation(differential(coefficient), (mouseX - CAN_W / 2) * SPP);
     drawSlope(slope);
@@ -131,7 +155,6 @@ const mainLoop = () => {
     const x = (mouseX - CAN_W / 2) * SPP;
     const y = equation(coefficient, x);
     ctx.fillText(`P (${Math.floor(x * 100) / 100}, ${Math.floor(y * 100) / 100})`, 10, 65);
-    TMPcoefficient = coefficient.slice();
 };
 
 setInterval(mainLoop, 33);
