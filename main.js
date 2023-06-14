@@ -118,6 +118,8 @@ const drawLattice = () => {
 const cfs = document.getElementById("coefficients");
 const makeRanges = () => {
     for (let i = 0; i < coefficient.length; i++) {
+        const oneCoeElm = document.createElement("p");
+        cfs.appendChild(oneCoeElm);
         const range = document.createElement("input");
         range.type = "range";
         range.id = `cfs${i}`;
@@ -127,7 +129,11 @@ const makeRanges = () => {
         range.min = -10;
         range.max = 10;
         range.step = 0.2;
-        cfs.appendChild(range);
+        oneCoeElm.appendChild(range);
+
+        const minusBtnElm = document.createElement("button");
+        minusBtnElm.innerHTML = "-";
+        oneCoeElm.appendChild(minusBtnElm);
     }
 }
 makeRanges();
